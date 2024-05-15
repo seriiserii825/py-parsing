@@ -1,41 +1,52 @@
 #!/usr/bin/python3
+import requests
+import os
+import json
 from bs4 import BeautifulSoup
-import re
-with open('index.html', 'r') as file:
-    src = file.read()
-soup = BeautifulSoup(src, 'lxml')
-title = soup.title
-h3 = soup.find('h3')
-h3_all = soup.find_all('h3')
-user_name = soup.find('div', class_='user__name')
-# print(user_name.text.strip())
-user_name = soup.find('div', {'class': 'user__name', 'id': 'user-name'})
-# print(user_name.text.strip())
-user_info = soup.find(class_='user__info').find_all('span')
-# for item in user_info:
-#     print(item.text)
 
-social__networks = soup.find(class_='social__networks').find_all('a')
-for item in social__networks:
-    item_text = item.text
-    item_url = item.get('href')
-    # print(f'{item_text}: {item_url}')
+domain_url = 'https://health-diet.ru'
+url = domain_url + '/table_calorie/?utm_source=leftMenu&utm_medium=table_calorie'
 
-# post_text = soup.find(class_='post__text').find_parent()
-post_text = soup.find(class_='post__text').find_parent('div', class_='user__post')
-# print(post_text)
+headers = {
+        'Accept': '*/*',
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
 
-# find_next - find next inside tag
+def getFirstPage():
+    req = requests.get(url)
+    src = req.text
 
-next_el = soup.find(class_='post__title').find_next_sibling()
-# print(next_el)
+    with open('html/index.html', 'w') as file:
+        file.write(src)
 
-# attr = link['href']
-# attr = link.get('href')
+def saveToJson(filename, data):
+    with open(filename, 'w') as file:
+        json.dump(data, file, indent=4, ensure_ascii=False)
 
-# find_a_by_text = soup.find('a', string='Instagram')
-find_a_by_text = soup.find('a', string=re.compile('Instagram'))
-# print(find_a_by_text)
+def scrapFirstPage():
+    src = open('html/index.html').read()
+    soup = BeautifulSoup(src, 'lxml')
+    categories_links = soup.find_all(class_='mzr-tc-group-item-href')
+    all_categories_dict = {}
+    for item in categories_links:
+        symbols = [' ', ',', '(', ')', '/', '-']
+        title = item.text
+        link = domain_url + item.get('href')
+        for s in symbols:
+            if s in title:
+                title = title.replace(s, '_')
+                title = title.rstrip('_')
+        all_categories_dict[title] = link
+        if not os.path.isdir('json'):
+            os.mkdir('json')
+        saveToJson('json/all_categories_dict.json', all_categories_dict)
 
-find_all_a_by_text = soup.find_all('a', string=re.compile('[Ii]nstagram'))
-print(find_all_a_by_text)
+def mainPage():
+    if not os.path.isdir('html'):
+        os.mkdir('html')
+        getFirstPage()
+    else:
+        scrapFirstPage()
+
+if __name__ == '__main__':
+    mainPage()
