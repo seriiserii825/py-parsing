@@ -3,9 +3,18 @@ import requests
 import csv
 import os
 import json
+import xml.etree.ElementTree as ET
+from tabulate import tabulate
 from bs4 import BeautifulSoup
+from prettytable import PrettyTable
+from rich.console import Console
+from rich.table import Table
+from termcolor import colored
+console = Console()
+
 
 domain_url = input('Enter domain url: ')
+
 if domain_url == '':
     exit('You did not enter a domain url')
 
@@ -21,39 +30,84 @@ def getFirstPage():
         touch = open('index.xml', 'w')
     with open('index.xml', 'w') as file:
         file.write(src)
+    scrapFirstPage()
 
-# def saveToJson(filename, data):
-#     with open(filename, 'w') as file:
-#         json.dump(data, file, indent=4, ensure_ascii=False)
+def scarpPageSitemap():
+    urls = ()
+    file1 = open('page-sitemap.xml', 'r')
+    Lines = file1.readlines()
+    pages = ()
+    for line in Lines:
+        if '<loc>' in line:
+            # get text between tags
+            url = line.split('<loc>')[1].split('</loc>')[0]
+            pages = pages + (url,)
+
+    table = Table(show_header=True, header_style="bold magenta", show_lines=True, row_styles=["dim", ""])
+    table.add_column("Page", justify="start", style="cyan")
+    table.add_column("Meta Title", justify="start", style="green")
+    table.add_column("Meta Description", justify="start")
+    for page in pages:
+        print(f'Getting {page}')
+        # page_title = 'title'
+        page_title = page.split(domain_url)[1]
+        print(colored(f'Getting {page_title}', "green"))
+        req = requests.get(page)
+        src = req.text
+        soup = BeautifulSoup(src, 'lxml')
+        #get meta title
+        result_title = ''
+        result_description = ''
+        meta_title = soup.find('title').text
+        if meta_title == '':
+            result_title = colored('No meta title', 'red')
+        else:
+            result_title = meta_title
+        if soup.find('meta', attrs={'name': 'description'}):
+            meta_description = soup.find('meta', attrs={'name': 'description'})['content']
+            result_description = meta_description
+        else: 
+            result_description = colored('No meta description', 'red')
+        table.add_row(
+            page_title,
+            result_title,
+            result_description
+        )
+    console.print(table)
 
 def scrapFirstPage():
-    src = open('html/index.html').read()
-    # soup = BeautifulSoup(src, 'lxml')
-    # categories_links = soup.find_all(class_='mzr-tc-group-item-href')
-    # all_categories_dict = {}
-    # for item in categories_links:
-    #     symbols = [' ', ',', '(', ')', '/', '-']
-    #     title = item.text
-    #     link = domain_url + item.get('href')
-    #     for s in symbols:
-    #         if s in title:
-    #             title = title.replace(s, '_')
-    #             title = title.rstrip('_')
-    #     all_categories_dict[title] = link
-    #
-    #     if not os.path.isdir('json'):
-    #         os.mkdir('json')
-    #     saveToJson('json/all_categories_dict.json', all_categories_dict)
-    # handleCategoryPage(all_categories_dict)
+    urls = ()
+    file1 = open('index.xml', 'r')
+    Lines = file1.readlines()
+    for line in Lines:
+        if '<loc>' in line:
+            # get text between tags
+            url = line.split('<loc>')[1].split('</loc>')[0]
+            urls = urls + (url,)
+        
+    for url in urls:
+        if 'page-sitemap' in url:
+            if not os.path.isfile('page-sitemap.xml'):
+                touch = open('page-sitemap.xml', 'w')
+                req = requests.get(domain_url + 'page-sitemap.xml')
+                src = req.text
+                with open('page-sitemap.xml', 'w') as file:
+                    file.write(src)
+                scarpPageSitemap()
+            else:
+                scarpPageSitemap()
 
 def mainPage():
-    # scrapFirstPage()
-    getFirstPage()
-    # if not os.path.isdir('html'):
-    #     os.mkdir('html')
-    #     getFirstPage()
-    # else:
-    #     scrapFirstPage()
+    clear_all = input('Do you want to clear all files? (y/n): ')
+    if clear_all == 'y':
+        if os.path.isfile('index.xml'):
+            os.remove('index.xml')
+        if os.path.isfile('page-sitemap.xml'):
+            os.remove('page-sitemap.xml')
+    if not os.path.isfile('index.xml'):
+        getFirstPage()
+    else:
+        scrapFirstPage()
 
 if __name__ == '__main__':
     mainPage()
