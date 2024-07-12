@@ -31,6 +31,7 @@ def scarpPageSitemap():
         if '<loc>' in line:
             # get text between tags
             url = line.split('<loc>')[1].split('</loc>')[0]
+            print(url)
             pages = pages + (url,)
     table = Table(show_header=True, header_style="bold magenta", show_lines=True, row_styles=["dim", ""])
     table.add_column("Page", justify="start", style="cyan")
