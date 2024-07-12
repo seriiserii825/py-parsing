@@ -1,39 +1,29 @@
 #!/usr/bin/python3
 import requests
-import csv
 import os
-import json
-import xml.etree.ElementTree as ET
-from tabulate import tabulate
 from bs4 import BeautifulSoup
-from prettytable import PrettyTable
 from rich.console import Console
 from rich.table import Table
 from termcolor import colored
+from pyfzf.pyfzf import FzfPrompt
 console = Console()
-
-
-domain_url = input('Enter domain url: ')
-
-if domain_url == '':
-    exit('You did not enter a domain url')
-
+fzf = FzfPrompt()
+if not os.path.isfile('py-parsing.py'):
+    py_parsing_dir_path = os.path.dirname(os.path.realpath(__file__))
+    os.chdir(py_parsing_dir_path)
 headers = {
         'Accept': '*/*',
         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         }
-
 def getFirstPage():
     req = requests.get(domain_url + 'sitemap_index.xml')
     src = req.text
     if not os.path.isfile('index.xml'):
-        touch = open('index.xml', 'w')
+        open('index.xml', 'w')
     with open('index.xml', 'w') as file:
         file.write(src)
     scrapFirstPage()
-
 def scarpPageSitemap():
-    urls = ()
     file1 = open('page-sitemap.xml', 'r')
     Lines = file1.readlines()
     pages = ()
@@ -42,20 +32,15 @@ def scarpPageSitemap():
             # get text between tags
             url = line.split('<loc>')[1].split('</loc>')[0]
             pages = pages + (url,)
-
     table = Table(show_header=True, header_style="bold magenta", show_lines=True, row_styles=["dim", ""])
     table.add_column("Page", justify="start", style="cyan")
     table.add_column("Meta Title", justify="start", style="green")
     table.add_column("Meta Description", justify="start")
     for page in pages:
-        print(f'Getting {page}')
-        # page_title = 'title'
         page_title = page.split(domain_url)[1]
-        print(colored(f'Getting {page_title}', "green"))
         req = requests.get(page)
         src = req.text
         soup = BeautifulSoup(src, 'lxml')
-        #get meta title
         result_title = ''
         result_description = ''
         meta_title = soup.find('title').text
@@ -74,17 +59,14 @@ def scarpPageSitemap():
             result_description
         )
     console.print(table)
-
 def scrapFirstPage():
     urls = ()
     file1 = open('index.xml', 'r')
     Lines = file1.readlines()
     for line in Lines:
         if '<loc>' in line:
-            # get text between tags
             url = line.split('<loc>')[1].split('</loc>')[0]
             urls = urls + (url,)
-        
     for url in urls:
         if 'page-sitemap' in url:
             if not os.path.isfile('page-sitemap.xml'):
@@ -96,18 +78,68 @@ def scrapFirstPage():
                 scarpPageSitemap()
             else:
                 scarpPageSitemap()
-
+def getDomainsFromFile():
+    with open('domains.txt', 'r') as file:
+        domains_list = ()
+        domains_url_from_file = file.read()
+        table = Table(show_header=True, header_style="bold magenta", show_lines=True, row_styles=["dim", ""])
+        table.add_column("Domain", justify="start", style="cyan")
+        file1 = open('domains.txt', 'r')
+        Lines = file1.readlines()
+        for line in Lines:
+            table.add_row(line)
+        console.print(table)
+        for domain in domains_url_from_file.split('\n'):
+            if domain != '':
+                domains_list = domains_list + (domain,)
+        return domains_list
+def chooseDomainUrl():
+    global domain_url
+    if not os.path.isfile('domains.txt'):
+        domain_url = input('Enter domain url: ')
+        if domain_url[-1] != '/':
+            domain_url = domain_url + '/'
+        with open('domains.txt', 'a') as file:
+            file.write(domain_url + '\n')
+    else:
+        domains_list = getDomainsFromFile()
+        input_remove_domain = input(colored('Do you want to remove domain from list? (y/n): ', "red"))
+        if input_remove_domain == 'y':
+            domain_url = fzf.prompt(domains_list)
+            domain_url = domain_url[0]
+            with open('domains.txt', 'r') as file:
+                lines = file.readlines()
+            with open('domains.txt', 'w') as file:
+                for line in lines:
+                    if line.strip("\n") != domain_url:
+                        file.write(line)
+        domains_list = getDomainsFromFile()
+        print(colored(f'1. Choose domain from list', "green"))
+        print(colored(f'2. Create new domain', "blue"))
+        choose_or_create = input('Choose option: ')
+        if choose_or_create == '2':
+            domain_url = input('Enter domain url: ')
+            file1 = open('domains.txt', 'r')
+            if domain_url in file1.read():
+                print(colored('Domain already exists', 'red'))
+                exit(colored(f'Domain {domain_url} already exists', "red"))
+            if domain_url[-1] != '/':
+                domain_url = domain_url + '/'
+            with open('domains.txt', 'a') as file:
+                file.write(domain_url + '\n')
+        else:
+            domain_url = fzf.prompt(domains_list)
+            domain_url = domain_url[0]
+        print(f'You have chosen {domain_url}')
 def mainPage():
-    clear_all = input('Do you want to clear all files? (y/n): ')
+    print(colored('Welcome to Sitemap generator', 'green'))
+    chooseDomainUrl()
+    clear_all = input('Do you want to clear all files with generated sitemaps? (y/n): ')
     if clear_all == 'y':
-        if os.path.isfile('index.xml'):
-            os.remove('index.xml')
-        if os.path.isfile('page-sitemap.xml'):
-            os.remove('page-sitemap.xml')
+        os.system('rm -rf *.xml')
     if not os.path.isfile('index.xml'):
         getFirstPage()
     else:
         scrapFirstPage()
-
 if __name__ == '__main__':
     mainPage()
