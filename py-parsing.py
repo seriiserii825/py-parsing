@@ -6,7 +6,6 @@ from rich.console import Console
 from rich.table import Table
 from termcolor import colored
 from pyfzf.pyfzf import FzfPrompt
-from term_image.image import from_url
 
 from libs.select import selectMultiple
 console = Console()
@@ -38,9 +37,14 @@ def scarpPageSitemap(file_name):
             pages = pages + (url,)
     table = Table(show_header=True, header_style="bold magenta", show_lines=True, row_styles=["dim", ""])
     table.add_column("Page", justify="start", style="cyan")
-    table.add_column("Meta Title", justify="start", style="green")
-    table.add_column("Meta Description", justify="start")
-    table.add_column("Og image", justify="start")
+
+    show_og_image = input('Do you want to show og:image? (y/n): ')
+
+    if show_og_image == 'y':
+        table.add_column("Og image", justify="start")
+    else:
+        table.add_column("Meta Title", justify="start", style="green")
+        table.add_column("Meta Description", justify="start")
     for page in pages:
         page_title = page.split(domain_url)[1]
         req = requests.get(page)
@@ -67,15 +71,17 @@ def scarpPageSitemap(file_name):
             result_image = colored('No og:image', 'red')
         if result_image != '':
             result_image = colored(result_image, 'green')
-
-        image = from_url(result_image)
-        print(f"Image: {image}")
-        table.add_row(
-            page_title,
-            result_title,
-            result_description,
-            result_image
-        )
+        if show_og_image == 'y':
+            table.add_row(
+                result_title,
+                result_image
+            )
+        else:
+            table.add_row(
+                page_title,
+                result_title,
+                result_description
+            )
     console.print(table)
 def scrapFirstPage():
     urls = ()
