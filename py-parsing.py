@@ -127,6 +127,43 @@ def getDomainsFromFile():
             if domain != '':
                 domains_list = domains_list + (domain,)
         return domains_list
+def domainMenu():
+    global domain_url
+    domains_list = getDomainsFromFile()
+    print(colored(f'1. Choose domain from list', "green"))
+    print(colored(f'2. Create new domain', "blue"))
+    print(colored(f'3. Remove domain', "yellow"))
+    print(colored(f'4. Exit', "red"))
+    choose_or_create = input('Choose option: ')
+    if choose_or_create == '2':
+        domain_url = input('Enter domain url: ')
+        file1 = open('domains.txt', 'r')
+        if domain_url in file1.read():
+            print(colored('Domain already exists', 'red'))
+            exit(colored(f'Domain {domain_url} already exists', "red"))
+        if domain_url[-1] != '/':
+            domain_url = domain_url + '/'
+        with open('domains.txt', 'a') as file:
+            file.write(domain_url + '\n')
+        return False
+    elif choose_or_create == '1':
+        domain_url = fzf.prompt(domains_list)
+        domain_url = domain_url[0]
+        return True
+    elif choose_or_create == '3':
+        domains_list = getDomainsFromFile()
+        domain_url = fzf.prompt(domains_list)
+        domain_url = domain_url[0]
+        with open('domains.txt', 'r') as file:
+            lines = file.readlines()
+        with open('domains.txt', 'w') as file:
+            for line in lines:
+                if line.strip("\n") != domain_url:
+                    file.write(line)
+        return False
+    else:
+        exit('Goodbye')
+
 def chooseDomainUrl():
     global domain_url
     if not os.path.isfile('domains.txt'):
@@ -136,45 +173,21 @@ def chooseDomainUrl():
         with open('domains.txt', 'a') as file:
             file.write(domain_url + '\n')
     else:
-        domains_list = getDomainsFromFile()
-        print(colored(f'1. Choose domain from list', "green"))
-        print(colored(f'2. Create new domain', "blue"))
-        print(colored(f'3. Remove domain', "red"))
-        choose_or_create = input('Choose option: ')
-        if choose_or_create == '2':
-            domain_url = input('Enter domain url: ')
-            file1 = open('domains.txt', 'r')
-            if domain_url in file1.read():
-                print(colored('Domain already exists', 'red'))
-                exit(colored(f'Domain {domain_url} already exists', "red"))
-            if domain_url[-1] != '/':
-                domain_url = domain_url + '/'
-            with open('domains.txt', 'a') as file:
-                file.write(domain_url + '\n')
-        elif choose_or_create == '1':
-            domain_url = fzf.prompt(domains_list)
-            domain_url = domain_url[0]
-        else:
-            domains_list = getDomainsFromFile()
-            domain_url = fzf.prompt(domains_list)
-            domain_url = domain_url[0]
-            with open('domains.txt', 'r') as file:
-                lines = file.readlines()
-            with open('domains.txt', 'w') as file:
-                for line in lines:
-                    if line.strip("\n") != domain_url:
-                        file.write(line)
-            exit(colored(f'Domain {domain_url} removed', "red"))
-        print(f'You have chosen {domain_url}')
+        back = domainMenu()
+        if back == False:
+            return False
 def mainPage():
     print(colored('Welcome to Sitemap generator', 'green'))
-    chooseDomainUrl()
-    clear_all = input('Do you want to clear all files with generated sitemaps? (y/n): ')
-    if clear_all == 'y':
-        os.system('rm -rf *.xml')
-    if not os.path.isfile('index.xml'):
-        getFirstPage()
+    back = chooseDomainUrl()
+    if back == False:
+        mainPage()
     else:
-        scrapFirstPage()
+        clear_all = input(colored('Do you want to clear all files with generated sitemaps? (y/n): ', "green"))
+        if clear_all == 'y':
+            os.system('rm -rf *.xml')
+        if not os.path.isfile('index.xml'):
+            getFirstPage()
+        else:
+            scrapFirstPage()
 if __name__ == '__main__':
     mainPage()
