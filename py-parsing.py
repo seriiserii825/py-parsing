@@ -6,6 +6,8 @@ from rich.console import Console
 from rich.table import Table
 from termcolor import colored
 from pyfzf.pyfzf import FzfPrompt
+
+from libs.select import selectMultiple
 console = Console()
 fzf = FzfPrompt()
 if not os.path.isfile('py-parsing.py'):
@@ -23,8 +25,8 @@ def getFirstPage():
     with open('index.xml', 'w') as file:
         file.write(src)
     scrapFirstPage()
-def scarpPageSitemap():
-    file1 = open('page-sitemap.xml', 'r')
+def scarpPageSitemap(file_name):
+    file1 = open(file_name, 'r')
     Lines = file1.readlines()
     pages = ()
     for line in Lines:
@@ -68,17 +70,20 @@ def scrapFirstPage():
         if '<loc>' in line:
             url = line.split('<loc>')[1].split('</loc>')[0]
             urls = urls + (url,)
+    sitemap_names = ()
     for url in urls:
-        if 'page-sitemap' in url:
-            if not os.path.isfile('page-sitemap.xml'):
-                touch = open('page-sitemap.xml', 'w')
-                req = requests.get(domain_url + 'page-sitemap.xml')
-                src = req.text
-                with open('page-sitemap.xml', 'w') as file:
-                    file.write(src)
-                scarpPageSitemap()
-            else:
-                scarpPageSitemap()
+        url_arr = url.split('/')
+        sitemap_name = url_arr[len(url_arr) - 1]
+        sitemap_names = sitemap_names + (sitemap_name,)
+    sitemap_list = selectMultiple(sitemap_names)
+    for sitemap in sitemap_list:
+        if not os.path.isfile(sitemap):
+            touch = open(sitemap, 'w')
+            req = requests.get(domain_url + sitemap)
+            src = req.text
+            with open(sitemap, 'w') as file:
+                file.write(src)
+            scarpPageSitemap(sitemap)
 def getDomainsFromFile():
     with open('domains.txt', 'r') as file:
         domains_list = ()
