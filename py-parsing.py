@@ -45,6 +45,7 @@ def scarpPageSitemap(file_name):
     else:
         table.add_column("Meta Title", justify="start", style="green")
         table.add_column("Meta Description", justify="start")
+        table.add_column("Follow", justify="start")
     for page in pages:
         page_title = page.split(domain_url)[1]
         req = requests.get(page)
@@ -58,6 +59,11 @@ def scarpPageSitemap(file_name):
             result_title = colored('No meta title', 'red')
         else:
             result_title = meta_title
+        ## check for no-follow
+        result_follow = ''
+        if soup.find('meta', attrs={'name': 'robots'}):
+            meta_follow = soup.find('meta', attrs={'name': 'robots'})['content']
+            result_follow = meta_follow
         if soup.find('meta', attrs={'name': 'description'}):
             meta_description = soup.find('meta', attrs={'name': 'description'})['content']
             result_description = meta_description
@@ -80,7 +86,8 @@ def scarpPageSitemap(file_name):
             table.add_row(
                 page_title,
                 result_title,
-                result_description
+                result_description,
+                result_follow
             )
     console.print(table)
 def scrapFirstPage():
