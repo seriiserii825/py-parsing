@@ -17,6 +17,7 @@ headers = {
         'Accept': '*/*',
         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         }
+
 def getFirstPage():
     req = requests.get(domain_url + 'sitemap_index.xml')
     src = req.text
@@ -25,6 +26,54 @@ def getFirstPage():
     with open('index.xml', 'w') as file:
         file.write(src)
     scrapFirstPage()
+
+def showSitemapMenu(pages):
+    choosed_columns = selectMultiple(['Meta Title', 'Meta Description', 'Follow', 'Og image'])
+    table = Table(show_header=True, header_style="bold magenta", show_lines=True, row_styles=["dim", ""])
+    table.add_column("Page", justify="start", style="cyan")
+    for column in choosed_columns:
+        table.add_column(column, justify="start", style="cyan")
+    print(f"Columns: {choosed_columns}")
+    for page in pages:
+        page_title = page.split(domain_url)[1]
+        req = requests.get(page)
+        src = req.text
+        soup = BeautifulSoup(src, 'lxml')
+        table_row = []
+        table_row.append(page_title)
+        for column in choosed_columns:
+            if column == 'Meta Title':
+                meta_title = soup.find('title').text
+                if meta_title != '':
+                    table_row.append(meta_title)
+                else:
+                    table_row.append(colored('No title', "red"))
+            if column == 'Follow':
+                if soup.find('meta', attrs={'name': 'robots'}):
+                    meta_follow = soup.find('meta', attrs={'name': 'robots'})['content']
+                    table_row.append(meta_follow)
+                else:
+                    table_row.append(colored('No follow', "red"))
+            if column == 'Meta Description':
+                if soup.find('meta', attrs={'name': 'description'}):
+                    meta_description = soup.find('meta', attrs={'name': 'description'})['content']
+                    table_row.append(meta_description)
+                else:
+                    table_row.append(colored('No description', "red"))
+            if column == 'Og image':
+                if soup.find('meta', attrs={'property': 'og:image'}):
+                    meta_image = soup.find('meta', attrs={'property': 'og:image'})['content']
+                    table_row.append(meta_image)
+                else:
+                    table_row.append(colored('No og image', "red"))
+        table.add_row(*table_row)
+    console.print(table)
+    choose_another_options = input(colored('Do you want to choose another options? (y/n): ', "green"))
+    if choose_another_options == 'y':
+        showSitemapMenu(pages)
+    else:
+        exit('Goodbye')
+
 def scarpPageSitemap(file_name):
     file1 = open(file_name, 'r')
     Lines = file1.readlines()
@@ -35,61 +84,8 @@ def scarpPageSitemap(file_name):
             url = line.split('<loc>')[1].split('</loc>')[0]
             print(url)
             pages = pages + (url,)
-    table = Table(show_header=True, header_style="bold magenta", show_lines=True, row_styles=["dim", ""])
-    table.add_column("Page", justify="start", style="cyan")
+    showSitemapMenu(pages)
 
-    show_og_image = input('Do you want to show og:image? (y/n): ')
-
-    if show_og_image == 'y':
-        table.add_column("Og image", justify="start")
-    else:
-        table.add_column("Meta Title", justify="start", style="green")
-        table.add_column("Meta Description", justify="start")
-        table.add_column("Follow", justify="start")
-    for page in pages:
-        page_title = page.split(domain_url)[1]
-        req = requests.get(page)
-        src = req.text
-        soup = BeautifulSoup(src, 'lxml')
-        result_title = ''
-        result_description = ''
-        result_image = ''
-        meta_title = soup.find('title').text
-        if meta_title == '':
-            result_title = colored('No meta title', 'red')
-        else:
-            result_title = meta_title
-        ## check for no-follow
-        result_follow = ''
-        if soup.find('meta', attrs={'name': 'robots'}):
-            meta_follow = soup.find('meta', attrs={'name': 'robots'})['content']
-            result_follow = meta_follow
-        if soup.find('meta', attrs={'name': 'description'}):
-            meta_description = soup.find('meta', attrs={'name': 'description'})['content']
-            result_description = meta_description
-        else: 
-            result_description = colored('No meta description', 'red')
-        ## check for og_image
-        if soup.find('meta', attrs={'property': 'og:image'}):
-            meta_image = soup.find('meta', attrs={'property': 'og:image'})['content']
-            result_image = meta_image
-        else:
-            result_image = colored('No og:image', 'red')
-        if result_image != '':
-            result_image = colored(result_image, 'green')
-        if show_og_image == 'y':
-            table.add_row(
-                result_title,
-                result_image
-            )
-        else:
-            table.add_row(
-                page_title,
-                result_title,
-                result_description,
-                result_follow
-            )
-    console.print(table)
 def scrapFirstPage():
     urls = ()
     file1 = open('index.xml', 'r')
@@ -182,9 +178,7 @@ def mainPage():
     if back == False:
         mainPage()
     else:
-        clear_all = input(colored('Do you want to clear all files with generated sitemaps? (y/n): ', "green"))
-        if clear_all == 'y':
-            os.system('rm -rf *.xml')
+        os.system('rm -rf *.xml')
         if not os.path.isfile('index.xml'):
             getFirstPage()
         else:
