@@ -6,6 +6,7 @@ from rich.console import Console
 from rich.table import Table
 from termcolor import colored
 from pyfzf.pyfzf import FzfPrompt
+from term_image.image import from_url
 
 from libs.select import selectMultiple
 console = Console()
@@ -39,6 +40,7 @@ def scarpPageSitemap(file_name):
     table.add_column("Page", justify="start", style="cyan")
     table.add_column("Meta Title", justify="start", style="green")
     table.add_column("Meta Description", justify="start")
+    table.add_column("Og image", justify="start")
     for page in pages:
         page_title = page.split(domain_url)[1]
         req = requests.get(page)
@@ -46,6 +48,7 @@ def scarpPageSitemap(file_name):
         soup = BeautifulSoup(src, 'lxml')
         result_title = ''
         result_description = ''
+        result_image = ''
         meta_title = soup.find('title').text
         if meta_title == '':
             result_title = colored('No meta title', 'red')
@@ -56,10 +59,22 @@ def scarpPageSitemap(file_name):
             result_description = meta_description
         else: 
             result_description = colored('No meta description', 'red')
+        ## check for og_image
+        if soup.find('meta', attrs={'property': 'og:image'}):
+            meta_image = soup.find('meta', attrs={'property': 'og:image'})['content']
+            result_image = meta_image
+        else:
+            result_image = colored('No og:image', 'red')
+        if result_image != '':
+            result_image = colored(result_image, 'green')
+
+        image = from_url(result_image)
+        print(f"Image: {image}")
         table.add_row(
             page_title,
             result_title,
-            result_description
+            result_description,
+            result_image
         )
     console.print(table)
 def scrapFirstPage():
@@ -109,19 +124,9 @@ def chooseDomainUrl():
             file.write(domain_url + '\n')
     else:
         domains_list = getDomainsFromFile()
-        input_remove_domain = input(colored('Do you want to remove domain from list? (y/n): ', "red"))
-        if input_remove_domain == 'y':
-            domain_url = fzf.prompt(domains_list)
-            domain_url = domain_url[0]
-            with open('domains.txt', 'r') as file:
-                lines = file.readlines()
-            with open('domains.txt', 'w') as file:
-                for line in lines:
-                    if line.strip("\n") != domain_url:
-                        file.write(line)
-        domains_list = getDomainsFromFile()
         print(colored(f'1. Choose domain from list', "green"))
         print(colored(f'2. Create new domain', "blue"))
+        print(colored(f'3. Remove domain', "red"))
         choose_or_create = input('Choose option: ')
         if choose_or_create == '2':
             domain_url = input('Enter domain url: ')
@@ -133,9 +138,20 @@ def chooseDomainUrl():
                 domain_url = domain_url + '/'
             with open('domains.txt', 'a') as file:
                 file.write(domain_url + '\n')
-        else:
+        elif choose_or_create == '1':
             domain_url = fzf.prompt(domains_list)
             domain_url = domain_url[0]
+        else:
+            domains_list = getDomainsFromFile()
+            domain_url = fzf.prompt(domains_list)
+            domain_url = domain_url[0]
+            with open('domains.txt', 'r') as file:
+                lines = file.readlines()
+            with open('domains.txt', 'w') as file:
+                for line in lines:
+                    if line.strip("\n") != domain_url:
+                        file.write(line)
+            exit(colored(f'Domain {domain_url} removed', "red"))
         print(f'You have chosen {domain_url}')
 def mainPage():
     print(colored('Welcome to Sitemap generator', 'green'))
