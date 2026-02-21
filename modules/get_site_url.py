@@ -15,6 +15,7 @@ def get_site_url(choice, file_path):
             site_url = selected_urls[0].strip()
         else:
             print("[red]No URL selected.")
+            exit(1)
     else:
         site_url = input("Please paste the URL of the sitemap: ")
         if site_url and site_url.endswith('.xml'):
@@ -23,3 +24,6 @@ def get_site_url(choice, file_path):
             site_url = site_url.strip()
         else:
             print("[red]Invalid URL. Please make sure it ends with '.xml'.")
+            exit(1)
+
+    return site_url
