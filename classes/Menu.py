@@ -1,6 +1,6 @@
 from typing import List
 
-from MyTable import MyTable
+from classes.MyTable import MyTable
 
 
 class Menu:
