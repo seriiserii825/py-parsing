@@ -125,3 +125,7 @@ class FilesHandle:
         )
         terminal_menu.show()
         return terminal_menu.chosen_menu_entries
+
+    def get_from_file(self, file_path):
+        with open(file_path, "r") as f:
+            return f.read()
