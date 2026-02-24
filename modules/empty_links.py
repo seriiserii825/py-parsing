@@ -1,13 +1,14 @@
 import os
-from classes.HtmlParser import HtmlSeoParser
+
+from classes.HtmlLinksParser import HtmlLinksParser
 from classes.Select import Select
 from modules.choose_html_files import choose_html_files
 
 
-def show_seo():
+def empty_links():
     root_dirs = os.listdir()
     selected_dir = Select.select_with_fzf(root_dirs)
     html_files = choose_html_files(selected_dir[0])
-    parser = HtmlSeoParser(html_files)
-    parser.parse_all()
-    parser.display()
+    link_parser = HtmlLinksParser(html_files)
+    link_parser.parse_all()
+    link_parser.show_results()
