@@ -1,4 +1,5 @@
 from classes.Menu import Menu
+from modules.all_links import all_links
 from modules.check_if_is_downloads_dir import check_if_is_downloads_dir
 from modules.download_all_sitemaps import download_all_sitemaps
 from modules.download_by_select import download_by_select
@@ -16,8 +17,9 @@ def main():
         ["0", "Download all sitemap URLs"],
         ["1", "Download URLs by selecting a site URL"],
         ["2", "Show seo"],
-        ["3", "Links"],
-        ["4", "Exit"],
+        ["3", "All Links"],
+        ["4", "Empty Links"],
+        ["5", "Exit"],
     ]
 
     Menu.display("Main Menu", menu_columns, menu_rows)
@@ -32,6 +34,8 @@ def main():
     if menu_index == 2:
         show_seo()
     if menu_index == 3:
+        all_links()
+    if menu_index == 4:
         empty_links()
     else:
         print("This option is not implemented yet.")

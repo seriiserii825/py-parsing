@@ -40,8 +40,8 @@ class HtmlLinksParser:
 
         # Находим все теги <a>
         for a_tag in soup.find_all("a"):
-            href = a_tag["href"]
-            if not href:
+            href = a_tag.get("href")
+            if href is None:
                 continue
 
             # Получаем номер строки (примерно)
@@ -87,6 +87,26 @@ class HtmlLinksParser:
             console.print(f"[dim]Обработка: {path.name}[/dim]")
             links = self.parse_file(path)
             self.all_links.extend(links)
+
+    def parse_empty_links(self) -> None:
+        """Парсит все файлы и сохраняет только ссылки с пустым href"""
+        self.all_links.clear()
+
+        for path in self.files:
+            if not path.is_file():
+                console.print(f"[yellow]Пропуск: {path} — не файл[/yellow]")
+                continue
+
+            console.print(f"[dim]Обработка: {path.name}[/dim]")
+            links = self.parse_file(path)
+            # if href are empty or have just a # hash
+            empty_links = [
+                link
+                for link in links
+                if link.href is None
+                or (isinstance(link.href, str) and link.href.strip() in ("", "#"))
+            ]
+            self.all_links.extend(empty_links)
 
     def show_results(self) -> None:
         """Выводит красивую таблицу со всеми найденными ссылками"""
