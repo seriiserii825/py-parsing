@@ -7,8 +7,10 @@ from classes.HtmlDownloader import HtmlDownloader
 
 def download_all_sitemaps(file_path: str) -> None:
     choice = input(
-        "Do you want to choose a URL from the file, or to paste new one? (f/p)? ")
+        "Do you want to choose a URL from the file, or to paste new one? (f/p)? "
+    )
     site_url = get_site_url(choice, file_path)
+
     if not site_url:
         print("[red]No URL provided. Aborting.")
         return
@@ -28,9 +30,8 @@ def download_all_sitemaps(file_path: str) -> None:
 
     print(f"[green]Found {len(urls)} URLs. Starting download...")
 
-    to_download = input(
-        "Do you want to download all URLs? (y/n)? ")
-    if to_download.lower() == 'y':
+    to_download = input("Do you want to download all URLs? (y/n)? ")
+    if to_download.lower() == "y":
         print("[yellow]Downloading URLs...")
         downloader = HtmlDownloader(urls, domain)
         downloader.download_all()

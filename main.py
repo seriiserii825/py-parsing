@@ -5,6 +5,7 @@ from modules.download_all_sitemaps import download_all_sitemaps
 from modules.download_by_select import download_by_select
 from modules.empty_links import empty_links
 from modules.get_site_urls_path import get_site_urls_path
+from modules.show_saved_sites_urls import show_saved_sites_urls
 from modules.show_seo import show_seo
 
 
@@ -25,7 +26,8 @@ def main():
     Menu.display("Main Menu", menu_columns, menu_rows)
 
     menu_index = Menu.choose_option()
-    print(f"{menu_index}: menu_index")
+
+    show_saved_sites_urls(site_urls_file_path)
 
     if menu_index == 0:
         download_all_sitemaps(site_urls_file_path)
