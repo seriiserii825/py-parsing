@@ -10,7 +10,7 @@ HEADERS = {
 
 
 class HtmlDownloader:
-    def __init__(self, urls: list[str], domain: str, output_dir: str = "downloads") -> None:
+    def __init__(self, urls: list[str], domain: str, output_dir: str = "") -> None:
         self.urls = urls
         self.domain = domain
         self.base_dir = os.path.join(output_dir, domain)
@@ -33,7 +33,8 @@ class HtmlDownloader:
 
         total = len(self.urls)
         done = total - len(failed)
-        print(f"[green]Done: {done}/{total} pages saved to [bold]{self.base_dir}[/bold]")
+        print(
+            f"[green]Done: {done}/{total} pages saved to [bold]{self.base_dir}[/bold]")
         if failed:
             print(f"[yellow]Failed ({len(failed)}):")
             for url in failed:

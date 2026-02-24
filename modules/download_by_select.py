@@ -5,7 +5,7 @@ from classes.SitemapParser import SitemapParser
 from classes.HtmlDownloader import HtmlDownloader
 
 
-def download_all_sitemaps(file_path: str) -> None:
+def download_by_select(file_path):
     choice = input(
         "Do you want to choose a URL from the file, or to paste new one? (f/p)? ")
     site_url = get_site_url(choice, file_path)
@@ -20,7 +20,8 @@ def download_all_sitemaps(file_path: str) -> None:
 
     print(f"[blue]Parsing sitemap: {site_url}")
     parser = SitemapParser(site_url)
-    urls = parser.parse()
+    urls = parser.parseBySelect()
+    print(f"urls: {urls}")
 
     if not urls:
         print("[red]No URLs found in sitemap.")
