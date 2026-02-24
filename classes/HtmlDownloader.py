@@ -4,9 +4,7 @@ from urllib.parse import urlparse
 from rich import print
 from rich.progress import track
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (compatible; ParserBot/1.0)"
-}
+HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; ParserBot/1.0)"}
 
 
 class HtmlDownloader:
@@ -34,7 +32,8 @@ class HtmlDownloader:
         total = len(self.urls)
         done = total - len(failed)
         print(
-            f"[green]Done: {done}/{total} pages saved to [bold]{self.base_dir}[/bold]")
+            f"[green]Done: {done}/{total} pages saved to [bold]{self.base_dir}[/bold]"
+        )
         if failed:
             print(f"[yellow]Failed ({len(failed)}):")
             for url in failed:
@@ -42,9 +41,14 @@ class HtmlDownloader:
 
     def _url_to_filepath(self, url: str) -> str:
         parsed = urlparse(url)
-        path = parsed.path.strip("/")
+        path = parsed.path.rstrip("/")  # убираем trailing slash
+
         if not path:
             return os.path.join(self.base_dir, "index.html")
-        if "." not in os.path.basename(path):
-            path = os.path.join(path, "index.html")
-        return os.path.join(self.base_dir, path)
+
+        # Если путь уже содержит расширение (image.jpg, style.css и т.п.) — оставляем как есть
+        if "." in os.path.basename(path):
+            return os.path.join(self.base_dir, path.lstrip("/"))
+
+        # Иначе считаем, что это "страница" → добавляем .html
+        return os.path.join(self.base_dir, path.lstrip("/") + ".html")
