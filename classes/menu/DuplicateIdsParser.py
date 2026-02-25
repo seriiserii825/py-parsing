@@ -38,7 +38,7 @@ class DuplicateIdsParser:
         }
 
     def parse_all(self):
-        self.results = [self.parse_file(f) for f in self.files]
+        self.results = [self.parse_file(str(f)) for f in self.files]
 
     def display(self):
         if not self.results:
