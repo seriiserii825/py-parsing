@@ -13,7 +13,7 @@ class DuplicateIdsParser:
         self.files = [Path(f) for f in file_paths]
         self.results = []
 
-    def parse_file(self, file_path):
+    def parse_file(self, file_path: str):
         with open(file_path, "r", encoding="utf-8") as f:
             soup = BeautifulSoup(f, "html.parser")
 
