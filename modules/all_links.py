@@ -1,6 +1,6 @@
 import os
 
-from classes.HtmlLinksParser import HtmlLinksParser
+from classes.menu.HtmlLinksParser import HtmlLinksParser
 from classes.Select import Select
 from modules.choose_html_files import choose_html_files
 

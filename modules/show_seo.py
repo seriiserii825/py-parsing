@@ -1,5 +1,5 @@
 import os
-from classes.HtmlParser import HtmlSeoParser
+from classes.menu.HtmlSeoParser import HtmlSeoParser
 from classes.Select import Select
 from modules.choose_html_files import choose_html_files
 

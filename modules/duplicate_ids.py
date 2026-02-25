@@ -1,14 +1,14 @@
 import os
-
-from classes.menu.HtmlLinksParser import HtmlLinksParser
 from classes.Select import Select
+from classes.menu.DuplicateIdsParser import DuplicateIdsParser
 from modules.choose_html_files import choose_html_files
 
 
-def empty_links():
+def duplicate_ids():
+    print("Select a directory to check for duplicate ids:")
     root_dirs = os.listdir()
     selected_dir = Select.select_with_fzf(root_dirs)
     html_files = choose_html_files(selected_dir[0])
-    link_parser = HtmlLinksParser(html_files)
-    link_parser.parse_empty_links()
-    link_parser.show_results()
+    di = DuplicateIdsParser(html_files)
+    di.parse_all()
+    di.display()
