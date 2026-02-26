@@ -140,3 +140,23 @@ class HtmlLinksParser:
             )
 
         console.print(table)
+
+    def parse_whatsap(self) -> None:
+        """Парсит все файлы и сохраняет только ссылки, содержащие 'whatsapp'"""
+        self.all_links.clear()
+
+        for path in self.files:
+            if not path.is_file():
+                console.print(f"[yellow]Пропуск: {path} — не файл[/yellow]")
+                continue
+
+            console.print(f"[dim]Обработка: {path.name}[/dim]")
+            links = self.parse_file(path)
+            whatsapp_links = [
+                link
+                for link in links
+                if link.href
+                and "whatsapp" in str(link.href).lower()
+                or "wa.me" in str(link.href).lower()
+            ]
+            self.all_links.extend(whatsapp_links)

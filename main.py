@@ -8,6 +8,7 @@ from modules.empty_links import empty_links
 from modules.get_site_urls_path import get_site_urls_path
 from modules.show_saved_sites_urls import show_saved_sites_urls
 from modules.show_seo import show_seo
+from modules.whatsap_links import whatsap_links
 
 
 def main():
@@ -22,6 +23,7 @@ def main():
         "All Links",
         "Empty Links",
         "Duplicate Ids",
+        "Whatsap Links",
         "Exit",
     ]
 
@@ -43,6 +45,8 @@ def main():
         empty_links()
     if menu_index == 5:
         duplicate_ids()
+    if menu_index == 6:
+        whatsap_links()
     else:
         print("This option is not implemented yet.")
 
