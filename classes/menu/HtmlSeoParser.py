@@ -41,6 +41,8 @@ class HtmlSeoParser:
             "h1": self._get_headings(soup, "h1"),
             "h2": self._get_headings(soup, "h2"),
             "h3": self._get_headings(soup, "h3"),
+            "noindex": bool(soup.find("meta", attrs={"name": "robots", "content": "noindex"})),
+            "nofollow": bool(soup.find("meta", attrs={"name": "robots", "content": "nofollow"})),
         }
 
     def parse_all(self):
@@ -60,6 +62,10 @@ class HtmlSeoParser:
             table.add_row("H1:", r['h1'] if r["h1"] else "[red]None")
             table.add_row("H2:", r['h2'] if r["h2"] else "[red]None")
             table.add_row("H3:", r['h3'] if r["h3"] else "[red]None")
+            table.add_row(
+                "Noindex:", "[green]Yes" if r["noindex"] else "[red]No")
+            table.add_row(
+                "Nofollow:", "[green]Yes" if r["nofollow"] else "[red]No")
 
             panel = Panel(
                 table,
