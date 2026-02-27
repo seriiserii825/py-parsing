@@ -31,37 +31,31 @@ def main():
 
     menu_rows = [[str(i), menu_items[i]] for i in range(len(menu_items))]
 
-    Menu.display("Main Menu", menu_columns, menu_rows)
-    menu_index = Menu.choose_option()
-    show_saved_sites_urls(site_urls_file_path)
+    while True:
+        Menu.display("Main Menu", menu_columns, menu_rows)
+        menu_index = Menu.choose_option()
+        show_saved_sites_urls(site_urls_file_path)
 
-    if menu_index == 0:
-        download_all_sitemaps(site_urls_file_path)
-        main()
-    if menu_index == 1:
-        download_by_select(site_urls_file_path)
-        main()
-    if menu_index == 2:
-        show_seo()
-        main()
-    if menu_index == 3:
-        all_links()
-        main()
-    if menu_index == 4:
-        empty_links()
-        main()
-    if menu_index == 5:
-        duplicate_ids()
-        main()
-    if menu_index == 6:
-        hash_links_no_id()
-        main()
-    if menu_index == 7:
-        whatsap_links()
-        main()
-    else:
-        print("This option is not implemented yet.")
-        exit()
+        if menu_index == 0:
+            download_all_sitemaps(site_urls_file_path)
+        elif menu_index == 1:
+            download_by_select(site_urls_file_path)
+        elif menu_index == 2:
+            show_seo()
+        elif menu_index == 3:
+            all_links()
+        elif menu_index == 4:
+            empty_links()
+        elif menu_index == 5:
+            duplicate_ids()
+        elif menu_index == 6:
+            hash_links_no_id()
+        elif menu_index == 7:
+            whatsap_links()
+        elif menu_index == 8:
+            break
+        else:
+            print("This option is not implemented yet.")
 
 
 if __name__ == "__main__":

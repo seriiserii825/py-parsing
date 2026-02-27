@@ -41,8 +41,7 @@ class HtmlLinksParser:
 
         for id_tag in soup.find_all(attrs={"id": True}):
             id_value = id_tag["id"]
-            if id_value in self.ids:
-                self.ids.add(str(id_value))
+            self.ids.add(str(id_value))
 
         # Находим все теги <a>
         for a_tag in soup.find_all("a"):
@@ -129,8 +128,8 @@ class HtmlLinksParser:
                 link
                 for link in links
                 if link.href
-                and "whatsapp" in str(link.href).lower()
-                or "wa.me" in str(link.href).lower()
+                and ("whatsapp" in str(link.href).lower()
+                     or "wa.me" in str(link.href).lower())
             ]
             self.all_links.extend(whatsapp_links)
 
