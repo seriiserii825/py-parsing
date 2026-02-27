@@ -6,6 +6,7 @@ from modules.download_by_select import download_by_select
 from modules.duplicate_ids import duplicate_ids
 from modules.empty_links import empty_links
 from modules.get_site_urls_path import get_site_urls_path
+from modules.hash_links_no_id import hash_links_no_id
 from modules.show_saved_sites_urls import show_saved_sites_urls
 from modules.show_seo import show_seo
 from modules.whatsap_links import whatsap_links
@@ -23,6 +24,7 @@ def main():
         "All Links",
         "Empty Links",
         "Duplicate Ids",
+        "Hash Links without Id",
         "Whatsap Links",
         "Exit",
     ]
@@ -52,6 +54,9 @@ def main():
         duplicate_ids()
         main()
     if menu_index == 6:
+        hash_links_no_id()
+        main()
+    if menu_index == 7:
         whatsap_links()
         main()
     else:

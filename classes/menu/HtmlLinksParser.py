@@ -25,6 +25,7 @@ class HtmlLinksParser:
     def __init__(self, file_paths: List[str]):
         self.files = [Path(f) for f in file_paths]
         self.all_links: List[LinkInfo] = []
+        self.ids: set[str] = set()  # для проверки дубликатов id на странице
 
     def parse_file(self, file_path: Path) -> List[LinkInfo]:
         """Парсит один файл и возвращает список ссылок с метаданными"""
@@ -37,6 +38,11 @@ class HtmlLinksParser:
             return []
 
         soup = BeautifulSoup(content, "html.parser")
+
+        for id_tag in soup.find_all(attrs={"id": True}):
+            id_value = id_tag["id"]
+            if id_value in self.ids:
+                self.ids.add(str(id_value))
 
         # Находим все теги <a>
         for a_tag in soup.find_all("a"):
@@ -108,6 +114,54 @@ class HtmlLinksParser:
             ]
             self.all_links.extend(empty_links)
 
+    def parse_whatsap(self) -> None:
+        """Парсит все файлы и сохраняет только ссылки, содержащие 'whatsapp'"""
+        self.all_links.clear()
+
+        for path in self.files:
+            if not path.is_file():
+                console.print(f"[yellow]Пропуск: {path} — не файл[/yellow]")
+                continue
+
+            console.print(f"[dim]Обработка: {path.name}[/dim]")
+            links = self.parse_file(path)
+            whatsapp_links = [
+                link
+                for link in links
+                if link.href
+                and "whatsapp" in str(link.href).lower()
+                or "wa.me" in str(link.href).lower()
+            ]
+            self.all_links.extend(whatsapp_links)
+
+    def parse_hash_no_ids(self) -> None:
+        """Парсит все файлы и сохраняет только ссылки с href='#' и без id"""
+        self.all_links.clear()
+
+        for path in self.files:
+            if not path.is_file():
+                console.print(f"[yellow]Пропуск: {path} — не файл[/yellow]")
+                continue
+
+            console.print(f"[dim]Обработка: {path.name}[/dim]")
+            links = self.parse_file(path)
+            hash_links = [
+                link for link in links if link.href and '#' in str(link.href)
+            ]
+
+            ids_from_hash_links = [
+                link.href.split('#', 1)[1]
+                for link in hash_links
+                if link.href.split('#', 1)[1]
+            ]
+
+            for hash_id in ids_from_hash_links:
+                if hash_id not in self.ids:
+                    self.all_links.extend(
+                        [link for link in hash_links if link.href and hash_id in str(
+                            link.href)]
+                    )
+
     def show_results(self) -> None:
         """Выводит красивую таблицу со всеми найденными ссылками"""
         if not self.all_links:
@@ -140,23 +194,3 @@ class HtmlLinksParser:
             )
 
         console.print(table)
-
-    def parse_whatsap(self) -> None:
-        """Парсит все файлы и сохраняет только ссылки, содержащие 'whatsapp'"""
-        self.all_links.clear()
-
-        for path in self.files:
-            if not path.is_file():
-                console.print(f"[yellow]Пропуск: {path} — не файл[/yellow]")
-                continue
-
-            console.print(f"[dim]Обработка: {path.name}[/dim]")
-            links = self.parse_file(path)
-            whatsapp_links = [
-                link
-                for link in links
-                if link.href
-                and "whatsapp" in str(link.href).lower()
-                or "wa.me" in str(link.href).lower()
-            ]
-            self.all_links.extend(whatsapp_links)
