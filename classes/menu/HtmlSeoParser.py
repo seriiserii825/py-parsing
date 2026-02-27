@@ -38,6 +38,9 @@ class HtmlSeoParser:
             "title": title,
             "description": description,
             "og_image": og_image_url,
+            "h1": self._get_headings(soup, "h1"),
+            "h2": self._get_headings(soup, "h2"),
+            "h3": self._get_headings(soup, "h3"),
         }
 
     def parse_all(self):
@@ -45,7 +48,8 @@ class HtmlSeoParser:
 
     def display(self):
         if not self.results:
-            console.print("[yellow]No results. Run parse_all() first.[/yellow]")
+            console.print(
+                "[yellow]No results. Run parse_all() first.[/yellow]")
             return
 
         for r in self.results:
@@ -53,6 +57,9 @@ class HtmlSeoParser:
             table.add_row("Title:", r["title"])
             table.add_row("Description:", r["description"])
             table.add_row("OG Image:", r["og_image"])
+            table.add_row("H1:", r['h1'] if r["h1"] else "[red]None")
+            table.add_row("H2:", r['h2'] if r["h2"] else "[red]None")
+            table.add_row("H3:", r['h3'] if r["h3"] else "[red]None")
 
             panel = Panel(
                 table,
@@ -61,3 +68,10 @@ class HtmlSeoParser:
                 border_style="green",
             )
             console.print(panel)
+
+    def _get_headings(self, soup, tag):
+        tag_all = [h.text.strip() for h in soup.find_all(tag)]
+        tag_count = len(tag_all)
+        if tag_count == 0:
+            return "[red] Missing"
+        return f"({tag_count}) - {tag_all}"
