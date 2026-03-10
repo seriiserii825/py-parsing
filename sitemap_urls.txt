@@ -1,2 +1,3 @@
 https://campingvittoria.it/sitemap_index.xml
 http://lc-casa-helen.local/sitemap_index.xml
+http://lc-dimensionefiamma.local/sitemap_index.xml
