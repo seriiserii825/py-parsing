@@ -318,6 +318,86 @@ class HtmlLinksParser:
 
         console.print(table)
 
+    def parse_img_no_alt_role(self) -> None:
+        """Находит <img> без alt или с пустым alt, у которых нет role="presentation"/"none" """
+        self.all_links.clear()
+
+        for path in self.files:
+            if not path.is_file():
+                console.print(f"[yellow]Пропуск: {path} — не файл[/yellow]")
+                continue
+
+            console.print(f"[dim]Обработка: {path.name}[/dim]")
+
+            try:
+                content = path.read_text(encoding="utf-8")
+            except Exception as e:
+                console.print(f"[red]Ошибка чтения {path.name}: {e}[/red]")
+                continue
+
+            soup = BeautifulSoup(content, "html.parser")
+
+            for img in soup.find_all("img"):
+                alt = img.get("alt")
+                missing_or_empty_alt = alt is None or str(alt).strip() == ""
+                if not missing_or_empty_alt:
+                    continue
+
+                role = str(img.get("role", "")).strip().lower()
+                if role in ("presentation", "none"):
+                    continue
+
+                line_number = self._get_line_number(img, content)
+                id_attr = img.get("id")
+
+                link = LinkInfo(
+                    filename=path.name,
+                    line_number=line_number,
+                    href=str(img.get("src", "")),
+                    text="(no alt)" if alt is None else "(empty alt)",
+                    id_attr=str(id_attr) if id_attr else None,
+                    class_attr=str(img.get("class")),
+                    title_attr=role or "(no role)",
+                )
+                self.all_links.append(link)
+
+    def show_img_no_alt_role_results(self) -> None:
+        """Выводит таблицу img без alt и без role=presentation"""
+        if not self.all_links:
+            console.print("[bold yellow]Проблем не найдено[/bold yellow]")
+            return
+
+        table = Table(
+            title='<img> без alt — требуется role="presentation"',
+            show_header=True,
+            header_style="bold magenta",
+        )
+        table.add_column("Файл", style="cyan", no_wrap=True)
+        table.add_column("Строка", justify="right")
+        table.add_column("src", style="green")
+        table.add_column("alt", style="red")
+        table.add_column("role", style="yellow")
+        table.add_column("id", style="blue")
+        table.add_column("class", style="dim")
+
+        for link in self.all_links:
+            classes = (
+                " ".join(link.class_attr)
+                if isinstance(link.class_attr, list)
+                else link.class_attr or ""
+            )
+            table.add_row(
+                link.filename,
+                str(link.line_number),
+                link.href,
+                link.text,
+                link.title_attr or "",
+                link.id_attr or "",
+                classes,
+            )
+
+        console.print(table)
+
     def show_results(self) -> None:
         """Выводит красивую таблицу со всеми найденными ссылками"""
         if not self.all_links:

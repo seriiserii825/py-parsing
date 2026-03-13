@@ -10,6 +10,7 @@ from modules.hash_links_no_id import hash_links_no_id
 from modules.show_saved_sites_urls import show_saved_sites_urls
 from modules.show_seo import show_seo
 from modules.aria_hidden_focusable import aria_hidden_focusable
+from modules.img_no_alt_role import img_no_alt_role
 from modules.role_button_links import role_button_links
 from modules.whatsap_links import whatsap_links
 
@@ -30,6 +31,7 @@ def main():
         "Whatsap Links",
         "Role Button Links",
         "Aria Hidden Focusable",
+        "Img No Alt Role",
         "Exit",
     ]
 
@@ -61,6 +63,8 @@ def main():
         elif menu_index == 9:
             aria_hidden_focusable()
         elif menu_index == 10:
+            img_no_alt_role()
+        elif menu_index == 11:
             break
         else:
             print("This option is not implemented yet.")
