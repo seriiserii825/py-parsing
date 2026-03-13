@@ -1,3 +1,5 @@
 https://campingvittoria.it/sitemap_index.xml
 http://lc-casa-helen.local/sitemap_index.xml
 http://lc-dimensionefiamma.local/sitemap_index.xml
+https://iteco.altuofianco.com/sitemap_index.xml
+http://lc-iteco.local/sitemap_index.xml

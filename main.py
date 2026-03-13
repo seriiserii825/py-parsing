@@ -9,6 +9,7 @@ from modules.get_site_urls_path import get_site_urls_path
 from modules.hash_links_no_id import hash_links_no_id
 from modules.show_saved_sites_urls import show_saved_sites_urls
 from modules.show_seo import show_seo
+from modules.role_button_links import role_button_links
 from modules.whatsap_links import whatsap_links
 
 
@@ -26,6 +27,7 @@ def main():
         "Duplicate Ids",
         "Hash Links without Id",
         "Whatsap Links",
+        "Role Button Links",
         "Exit",
     ]
 
@@ -53,6 +55,8 @@ def main():
         elif menu_index == 7:
             whatsap_links()
         elif menu_index == 8:
+            role_button_links()
+        elif menu_index == 9:
             break
         else:
             print("This option is not implemented yet.")

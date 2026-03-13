@@ -161,6 +161,82 @@ class HtmlLinksParser:
                             link.href)]
                     )
 
+    def parse_role_button(self) -> None:
+        """Парсит все файлы и сохраняет элементы с role на не-div/span тегах"""
+        self.all_links.clear()
+
+        allowed_tags = {"div", "span"}
+
+        for path in self.files:
+            if not path.is_file():
+                console.print(f"[yellow]Пропуск: {path} — не файл[/yellow]")
+                continue
+
+            console.print(f"[dim]Обработка: {path.name}[/dim]")
+
+            try:
+                content = path.read_text(encoding="utf-8")
+            except Exception as e:
+                console.print(f"[red]Ошибка чтения {path.name}: {e}[/red]")
+                continue
+
+            soup = BeautifulSoup(content, "html.parser")
+
+            for tag in soup.find_all(attrs={"role": True}):
+                if tag.name in allowed_tags:
+                    continue
+
+                line_number = self._get_line_number(tag, content)
+                id_attr = tag.get("id")
+
+                link = LinkInfo(
+                    filename=path.name,
+                    line_number=line_number,
+                    href=str(tag.name),           # tag name, e.g. "h2", "button"
+                    text=tag.get_text(strip=True),
+                    id_attr=str(id_attr) if id_attr else None,
+                    class_attr=str(tag.get("class")),
+                    title_attr=str(tag.get("role")),  # role value
+                )
+                self.all_links.append(link)
+
+    def show_role_results(self) -> None:
+        """Выводит таблицу элементов с role на неподходящих тегах"""
+        if not self.all_links:
+            console.print("[bold yellow]Элементов с некорректным role не найдено[/bold yellow]")
+            return
+
+        table = Table(
+            title="Role на неподходящих тегах (не div/span)",
+            show_header=True,
+            header_style="bold magenta",
+        )
+        table.add_column("Файл", style="cyan", no_wrap=True)
+        table.add_column("Строка", justify="right")
+        table.add_column("Тег", style="red")
+        table.add_column("role", style="yellow")
+        table.add_column("Текст", style="white")
+        table.add_column("id", style="blue")
+        table.add_column("class", style="dim")
+
+        for link in self.all_links:
+            classes = (
+                " ".join(link.class_attr)
+                if isinstance(link.class_attr, list)
+                else link.class_attr or ""
+            )
+            table.add_row(
+                link.filename,
+                str(link.line_number),
+                link.href,          # tag name
+                link.title_attr or "",  # role value
+                link.text[:60] + ("..." if len(link.text) > 60 else ""),
+                link.id_attr or "",
+                classes,
+            )
+
+        console.print(table)
+
     def show_results(self) -> None:
         """Выводит красивую таблицу со всеми найденными ссылками"""
         if not self.all_links:
