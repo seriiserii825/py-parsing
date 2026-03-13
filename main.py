@@ -9,6 +9,7 @@ from modules.get_site_urls_path import get_site_urls_path
 from modules.hash_links_no_id import hash_links_no_id
 from modules.show_saved_sites_urls import show_saved_sites_urls
 from modules.show_seo import show_seo
+from modules.aria_hidden_focusable import aria_hidden_focusable
 from modules.role_button_links import role_button_links
 from modules.whatsap_links import whatsap_links
 
@@ -28,6 +29,7 @@ def main():
         "Hash Links without Id",
         "Whatsap Links",
         "Role Button Links",
+        "Aria Hidden Focusable",
         "Exit",
     ]
 
@@ -57,6 +59,8 @@ def main():
         elif menu_index == 8:
             role_button_links()
         elif menu_index == 9:
+            aria_hidden_focusable()
+        elif menu_index == 10:
             break
         else:
             print("This option is not implemented yet.")

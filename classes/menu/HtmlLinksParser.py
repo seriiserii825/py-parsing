@@ -200,6 +200,87 @@ class HtmlLinksParser:
                 )
                 self.all_links.append(link)
 
+    def parse_aria_hidden_focusable(self) -> None:
+        """Находит focusable элементы внутри aria-hidden=true — они скрыты от AT, но доступны с клавиатуры"""
+        self.all_links.clear()
+
+        focusable_tags = {"a", "button", "input", "select", "textarea"}
+
+        for path in self.files:
+            if not path.is_file():
+                console.print(f"[yellow]Пропуск: {path} — не файл[/yellow]")
+                continue
+
+            console.print(f"[dim]Обработка: {path.name}[/dim]")
+
+            try:
+                content = path.read_text(encoding="utf-8")
+            except Exception as e:
+                console.print(f"[red]Ошибка чтения {path.name}: {e}[/red]")
+                continue
+
+            soup = BeautifulSoup(content, "html.parser")
+
+            for hidden in soup.find_all(attrs={"aria-hidden": "true"}):
+                for child in hidden.find_all(True):
+                    tag_name = child.name
+                    is_focusable_tag = tag_name in focusable_tags
+                    has_href = tag_name == "a" and child.get("href")
+                    tabindex = child.get("tabindex")
+                    has_tabindex = tabindex is not None and str(tabindex) != "-1"
+
+                    if (is_focusable_tag and (tag_name != "a" or has_href)) or has_tabindex:
+                        line_number = self._get_line_number(child, content)
+                        id_attr = child.get("id")
+
+                        link = LinkInfo(
+                            filename=path.name,
+                            line_number=line_number,
+                            href=str(tag_name),          # focusable tag name
+                            text=child.get_text(strip=True),
+                            id_attr=str(id_attr) if id_attr else None,
+                            class_attr=str(child.get("class")),
+                            title_attr=str(hidden.name),  # aria-hidden parent tag
+                        )
+                        self.all_links.append(link)
+
+    def show_aria_hidden_results(self) -> None:
+        """Выводит таблицу focusable элементов внутри aria-hidden=true"""
+        if not self.all_links:
+            console.print("[bold yellow]Проблем не найдено[/bold yellow]")
+            return
+
+        table = Table(
+            title="Focusable элементы внутри aria-hidden=\"true\"",
+            show_header=True,
+            header_style="bold magenta",
+        )
+        table.add_column("Файл", style="cyan", no_wrap=True)
+        table.add_column("Строка", justify="right")
+        table.add_column("Тег", style="red")
+        table.add_column("Родитель", style="yellow")
+        table.add_column("Текст", style="white")
+        table.add_column("id", style="blue")
+        table.add_column("class", style="dim")
+
+        for link in self.all_links:
+            classes = (
+                " ".join(link.class_attr)
+                if isinstance(link.class_attr, list)
+                else link.class_attr or ""
+            )
+            table.add_row(
+                link.filename,
+                str(link.line_number),
+                link.href,           # focusable tag
+                link.title_attr or "",  # aria-hidden parent
+                link.text[:60] + ("..." if len(link.text) > 60 else ""),
+                link.id_attr or "",
+                classes,
+            )
+
+        console.print(table)
+
     def show_role_results(self) -> None:
         """Выводит таблицу элементов с role на неподходящих тегах"""
         if not self.all_links:
