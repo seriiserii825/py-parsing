@@ -1,5 +1,5 @@
 from rich import print
-from classes.Select import Select
+from py_libs.Select import Select
 from classes.SiteUrlsFile import SiteUrlsFile
 
 

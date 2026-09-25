@@ -1,4 +1,4 @@
-from classes.MyTable import MyTable
+from py_libs.MyTable import MyTable
 from classes.SiteUrlsFile import SiteUrlsFile
 
 

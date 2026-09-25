@@ -1,4 +1,4 @@
-from classes.Menu import Menu
+from py_libs.Menu import Menu
 from modules.all_links import all_links
 from modules.check_if_is_downloads_dir import check_if_is_downloads_dir
 from modules.download_all_sitemaps import download_all_sitemaps

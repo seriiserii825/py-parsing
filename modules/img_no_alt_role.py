@@ -1,5 +1,5 @@
 import os
-from classes.Select import Select
+from py_libs.Select import Select
 from classes.menu.HtmlLinksParser import HtmlLinksParser
 from modules.choose_html_files import choose_html_files
 

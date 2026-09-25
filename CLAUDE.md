@@ -60,10 +60,10 @@ The app is a CLI tool for scraping and analyzing websites. Entry point is `main.
 | `HtmlLinksParser` | `classes/menu/` | Extract `<a>` tags from HTML files; filtering methods for empty, WhatsApp, and hash links |
 | `HtmlSeoParser` | `classes/menu/` | Extract title, meta description, og:image, headings, noindex/nofollow |
 | `DuplicateIdsParser` | `classes/menu/` | Find duplicate `id` attributes in HTML (excludes SVG) |
-| `Select` | `classes/` | Interactive selection via `fzf` (multi-select) or `simple-term-menu` |
+| `Select` | `py_libs` | Interactive selection via `fzf` (multi-select) or `simple-term-menu` |
 | `SiteUrlsFile` | `classes/` | Read/write the `sitemap_urls.txt` file |
 | `PathHelper` | `classes/` | Resolves paths relative to `main.py`'s directory, not CWD |
-| `Menu` / `MyTable` | `classes/` | CLI menu display using `rich` |
+| `Menu` / `MyTable` | `py_libs` | CLI menu display using `rich` |
 
 **Runtime constraint:** `check_if_is_downloads_dir()` enforces that the CWD must be named `Downloads` (typically `~/Downloads`). The app exits immediately if run from elsewhere. Downloaded HTML is saved to the CWD under a subdirectory named after the domain (e.g. `~/Downloads/example.com/path/page.html`).
 

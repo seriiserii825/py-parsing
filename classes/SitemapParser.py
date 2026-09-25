@@ -2,7 +2,7 @@ import requests
 import xml.etree.ElementTree as ET
 from rich import print
 
-from classes.Select import Select
+from py_libs.Select import Select
 
 SITEMAP_NS = "http://www.sitemaps.org/schemas/sitemap/0.9"
 HEADERS = {

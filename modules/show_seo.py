@@ -1,6 +1,6 @@
 import os
 from classes.menu.HtmlSeoParser import HtmlSeoParser
-from classes.Select import Select
+from py_libs.Select import Select
 from modules.choose_html_files import choose_html_files
 
 
